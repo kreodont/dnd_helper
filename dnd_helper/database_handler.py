@@ -1,6 +1,6 @@
 import boto3
 import botocore.client
-from typing import Optional, Dict
+from typing import Optional
 from Request import Request
 from Response import Response
 import json
@@ -85,11 +85,11 @@ def get_boto3_client(
         )
     else:
         client = boto3.Session(profile_name=profile_name).client(service_name)
-        return client, False
+        return client
 
     # saving to cache to to spend time to create it next time
     global_cached_boto3_clients[service_name] = client
-    return client, False
+    return client
 
 
 def fetch_article_text(request: Request, database_name='dnd_article2') -> Response:
@@ -106,13 +106,15 @@ def fetch_article_text(request: Request, database_name='dnd_article2') -> Respon
     result = database_client.get_item(
         TableName=database_name,
         Key={
-            'article_name':   {'S': request.parameters['name']},
+            'name':   {'S': article_name.lower()},
             # 'date': {'N': 1},
         })
 
     if 'Item' not in result:
-        return Response(text=f'Article "{article_name}" was not found in database')
+        return Response(text='', error=f'Article "{article_name}" was not found in database')
 
-    items: Dict[dict] = json.loads(result['Item']['value']['S'])
-    print(items)
-    return Response(text='')
+    items_dict = json.loads(result['Item']['value']['S'])
+    if request.intent_name not in items_dict:
+        return Response(text='', error=f'Intent {request.intent_name} was not found for word ${article_name}')
+
+    return Response(text=items_dict[request.intent_name]['description'])

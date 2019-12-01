@@ -1,5 +1,5 @@
 from Request import dict_to_request_object
-from Response import response_to_dict
+from Response import response_to_dict, add_card_to_response
 from database_handler import fetch_article_text
 
 
@@ -7,6 +7,7 @@ def dnd_helper(event: dict, context: dict) -> dict:
     print(event)
     request = dict_to_request_object(event, bool(context))
     response = fetch_article_text(request)
+    response = add_card_to_response(response, 'Hello')
     return response_to_dict(response)
 
 

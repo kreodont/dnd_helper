@@ -4,7 +4,7 @@ import json
 database_name = 'dnd_article2'
 
 
-def add_article(article_name: str, article_text: str, intent_name: str):
+def add_article(article_name: str, article_text: str, intent_name: str, lanuage: str):
     client = boto3.Session(profile_name='kreodont').client('dynamodb')
     stored_dict = client.get_item(
         TableName=database_name,
@@ -12,11 +12,11 @@ def add_article(article_name: str, article_text: str, intent_name: str):
             'name':   {'S': article_name.lower()},
         })
     if 'Item' not in stored_dict:
-        stored_dict = {intent_name: {}}
+        stored_dict = {intent_name: {'description': {}}}
     else:
         stored_dict = json.loads(stored_dict['Item']['value']['S'])
 
-    stored_dict[intent_name]['description'] = article_text
+    stored_dict[intent_name]['description'][lanuage] = article_text
 
     client.put_item(TableName=database_name,
                     Item={
@@ -29,11 +29,19 @@ def add_article(article_name: str, article_text: str, intent_name: str):
 
 
 add_article(
-    'БЕССОЗНАТЕЛЬНЫЙ',
-    '''Находящееся без сознания существо «недееспособно» (см. состояние), не способно перемещаться и говорить, а также не осознаёт своё окружение.
-Существо роняет всё, что держит, и падает ничком.
-Существо автоматически проваливает спасброски Силы и Ловкости. Броски атаки по существу совершаются с преимуществом.
-Любая атака, попавшая по такому существу, считается критическим попаданием, если нападающий находится в пределах 5 фт. от него.
+    'ИСПУГАННЫЙ',
+    '''Испуганное существо совершает с помехой проверки характеристик и броски атаки, пока источник его страха находится в пределах его линии обзора.
+Существо не способно добровольно приблизиться к источнику своего страха.
 ''',
     'condition',
+    'ru'
+)
+
+add_article(
+    'ИСПУГАННЫЙ',
+    '''• A frightened creature has disadvantage on ability checks and attack rolls while the source of its fear is within line of sight.
+• The creature can’t willingly move closer to the source of its fear.
+''',
+    'condition',
+    'en'
 )

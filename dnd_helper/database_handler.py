@@ -117,4 +117,4 @@ def fetch_article_text(request: Request, database_name='dnd_article2') -> Respon
     if request.intent_name not in items_dict:
         return Response(text='', error=f'Intent {request.intent_name} was not found for word ${article_name}')
 
-    return Response(text=items_dict[request.intent_name]['description'])
+    return Response(text=items_dict[request.intent_name]['description'][request.language])

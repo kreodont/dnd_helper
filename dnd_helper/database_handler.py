@@ -103,11 +103,12 @@ def fetch_article_text(request: Request, database_name='dnd_article2') -> Respon
     article_name = request.parameters[parameters_key]
 
     database_client = global_cached_boto3_clients['database_client']
+    if not article_name:
+        return Response(text='', error=f'Empty article was not found in database')
     result = database_client.get_item(
         TableName=database_name,
         Key={
             'name':   {'S': article_name.lower()},
-            # 'date': {'N': 1},
         })
 
     if 'Item' not in result:
@@ -117,4 +118,4 @@ def fetch_article_text(request: Request, database_name='dnd_article2') -> Respon
     if request.intent_name not in items_dict:
         return Response(text='', error=f'Intent {request.intent_name} was not found for word ${article_name}')
 
-    return Response(text=items_dict[request.intent_name]['description'][request.language])
+    return Response(text=items_dict[request.intent_name]['description'][request.language], header=article_name.title())

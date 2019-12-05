@@ -14,7 +14,9 @@ def response_to_dict(response: Response) -> dict:
     #     "fulfillmentText": response.text,
     #     "messages": response.messages,
     # }
-    formatted_text = response.text if response.text else 'Empty text'
+    if not response.text:
+        return {"fulfillmentText": 'Ничего не найдено'}
+    # formatted_text = response.text if response.text else 'Empty <b>text</b>'
     return {
         "payload": {
             "google": {
@@ -23,14 +25,14 @@ def response_to_dict(response: Response) -> dict:
                     "items": [
                         {
                             "simpleResponse": {
-                                "textToSpeech": "-"
+                                "textToSpeech": "пожалуйста"
                             }
                         },
                         {
                             "basicCard": {
                                 "title":               response.header,
                                 # "subtitle": "This is a subtitle",
-                                "formattedText":       formatted_text,
+                                "formattedText":       response.text,
                                 # "image": {
                                 #   "url": "https://storage.googleapis.com/actionsresources/logo_assistant_2x_64dp.png",
                                 #   "accessibilityText": "Image alternate text"

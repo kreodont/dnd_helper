@@ -92,9 +92,15 @@ def get_boto3_client(
     return client
 
 
-def fetch_article_text(request: Request, database_name='dnd_article2') -> Response:
+def fetch_article_text(
+        request: Request,
+        database_name='dnd_article2',
+) -> Response:
     if 'database_client' not in global_cached_boto3_clients:
-        global_cached_boto3_clients['database_client'] = get_boto3_client(aws_lambda_mode=request.lamda_mode, service_name='dynamodb')
+        global_cached_boto3_clients['database_client'] = get_boto3_client(
+                aws_lambda_mode=request.lamda_mode,
+                service_name='dynamodb',
+        )
 
     parameters_key = f'{request.intent_name}_entity'
     if parameters_key not in request.parameters:
@@ -104,7 +110,11 @@ def fetch_article_text(request: Request, database_name='dnd_article2') -> Respon
 
     database_client = global_cached_boto3_clients['database_client']
     if not article_name:
-        return Response(text='', error=f'Empty article was not found in database')
+        return Response(
+                text='',
+                error=f'Empty article was not found in database',
+        )
+
     result = database_client.get_item(
         TableName=database_name,
         Key={
@@ -112,10 +122,28 @@ def fetch_article_text(request: Request, database_name='dnd_article2') -> Respon
         })
 
     if 'Item' not in result:
-        return Response(text='', error=f'Article "{article_name}" was not found in database')
+        return Response(
+                text='',
+                error=f'Article "{article_name}" was not found in database',
+        )
 
     items_dict = json.loads(result['Item']['value']['S'])
     if request.intent_name not in items_dict:
-        return Response(text='', error=f'Intent {request.intent_name} was not found for word ${article_name}')
+        return Response(
+                text='',
+                error=f'Intent {request.intent_name} was not '
+                      f'found for word ${article_name}')
 
-    return Response(text=items_dict[request.intent_name]['description'][request.language], header=article_name.title())
+    request_lang = request.language
+    if request_lang == 'en':
+        another_lang = 'ru'
+    else:
+        another_lang = 'en'
+
+    return Response(
+            text=items_dict[request.intent_name]['description'][request_lang],
+            header=items_dict[request.intent_name]['title'][request_lang].title(),
+            predictions=[
+                items_dict[request.intent_name]['title'][another_lang],
+            ]
+    )

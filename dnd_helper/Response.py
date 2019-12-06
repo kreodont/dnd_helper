@@ -5,7 +5,9 @@ from dataclasses import dataclass, field
 class Response:
     text: str
     header: str = 'No header'
-    messages: list = field(default_factory=list)
+    predictions: list = field(default_factory=list)  # to be drawn at the
+    # bottom if any
+    # messages: list = field(default_factory=list)
     error: str = None
 
 
@@ -16,8 +18,8 @@ def response_to_dict(response: Response) -> dict:
     # }
     if not response.text:
         return {"fulfillmentText": 'Ничего не найдено'}
-    # formatted_text = response.text if response.text else 'Empty <b>text</b>'
-    return {
+
+    payload = {
         "payload": {
             "google": {
                 "expectUserResponse": True,
@@ -34,27 +36,31 @@ def response_to_dict(response: Response) -> dict:
                                 # "subtitle": "This is a subtitle",
                                 "formattedText":       response.text,
                                 # "image": {
-                                #   "url": "https://storage.googleapis.com/actionsresources/logo_assistant_2x_64dp.png",
+                                #   "url": "https://storage.googleapis.com/
+                                #   actionsresources/logo_assistant_2x_64dp.png",
                                 #   "accessibilityText": "Image alternate text"
                                 # },
                                 # "buttons":             [
                                 #     {
                                 #         "title":         "This is a button",
                                 #         "openUrlAction": {
-                                #             "url": "https://assistant.google.com/"
+                                #             "url": "https://
+                                #             assistant.google.com/"
                                 #         }
                                 #     }
                                 # ],
                                 # "imageDisplayOptions": "CROPPED"
                             }
                         },
-                        # {
-                        #     "simpleResponse": {
-                        #         "textToSpeech": "-"
-                        #     }
-                        # }
                     ]
                 }
             }
         }
     }
+    if response.predictions:
+        payload['payload']['google']['richResponse']['suggestions'] = []
+        for prediction in response.predictions:
+            payload['payload']['google']['richResponse'][
+                'suggestions'].append({'title': prediction})
+
+    return payload

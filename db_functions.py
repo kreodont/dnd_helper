@@ -15,10 +15,10 @@ def add_article(
 ):
     client = boto3.Session(profile_name='kreodont').client('dynamodb')
     stored_dict = client.get_item(
-        TableName=database_name,
-        Key={
-            'name': {'S': article_name.lower()},
-        })
+            TableName=database_name,
+            Key={
+                'name': {'S': article_name.lower()},
+            })
     if 'Item' not in stored_dict:
         stored_dict = {intent_name: {'description': {}}}
     else:
@@ -31,7 +31,7 @@ def add_article(
 
     client.put_item(TableName=database_name,
                     Item={
-                        'name':  {
+                        'name': {
                             'S': article_name.lower(),
                         },
                         'value': {
@@ -42,10 +42,10 @@ def add_article(
 def get_article(*, article_name: str) -> dict:
     client = boto3.Session(profile_name='kreodont').client('dynamodb')
     stored_dict = client.get_item(
-        TableName=database_name,
-        Key={
-            'name': {'S': article_name.lower()},
-        })
+            TableName=database_name,
+            Key={
+                'name': {'S': article_name.lower()},
+            })
     if 'Item' not in stored_dict:
         stored_dict = {}
     else:
@@ -58,15 +58,15 @@ def update_article_attribute(
         *,
         article_name: str,
         new_text: str,
-        attribute_name: str = 'description',
-        language: str = 'ru',
+        attribute_name: str,
+        language: str,
         intent: str = None):
     client = boto3.Session(profile_name='kreodont').client('dynamodb')
     stored_dict = client.get_item(
-        TableName=database_name,
-        Key={
-            'name': {'S': article_name.lower()},
-        })
+            TableName=database_name,
+            Key={
+                'name': {'S': article_name.lower()},
+            })
     if 'Item' not in stored_dict:
         stored_dict = {}
     else:
@@ -85,7 +85,7 @@ def update_article_attribute(
     new_dict[intent][attribute_name][language] = new_text
     client.put_item(TableName=database_name,
                     Item={
-                        'name':  {
+                        'name': {
                             'S': article_name.lower(),
                         },
                         'value': {
@@ -96,34 +96,43 @@ def update_article_attribute(
 # add_article(
 #     article_name='СХВАЧЕННЫЙ',
 #     article_text_ru=
-#     '''Скорость схваченного существа равна 0, и оно не получает выгоды ни от каких бонусов к скорости.
-# Состояние оканчивается, если схвативший становится недееспособен (см. состояние).
-# Это состояние также оканчивается, если какойлибо эффект выводит схваченное существо из зоны досягаемости того, кто его удерживает, или из зоны удерживающего эффекта. Например, когда существо отбрасывается заклинанием волна грома.
+#     '''Скорость схваченного существа равна 0, и оно не получает выгоды ни
+#     от каких бонусов к скорости.
+# Состояние оканчивается, если схвативший становится недееспособен (см.
+# состояние).
+# Это состояние также оканчивается, если какойлибо эффект выводит схваченное
+# существо из зоны досягаемости того, кто его удерживает, или из зоны
+# удерживающего эффекта. Например, когда существо отбрасывается заклинанием
+# волна грома.
 #
 # ''',
 #     article_text_en=
-#     '''A grappled creature’s speed becomes 0, and it can’t benefit from any bonus to its speed.
+#     '''A grappled creature’s speed becomes 0, and it can’t benefit from any
+#     bonus to its speed.
 # The condition ends if the Grappler is incapacitated (see the condition).
-# The condition also ends if an effect removes the grappled creature from the reach of the Grappler or Grappling effect, such as when a creature is hurled away by the Thunderwave spell.
+# The condition also ends if an effect removes the grappled creature from the
+# reach of the Grappler or Grappling effect, such as when a creature is
+# hurled away by the Thunderwave spell.
 #
 #     ''',
 #     intent_name='condition',
 #
 # )
 # print(get_article(article_name='схваченный'))
-# update_article_attribute(
-#     article_name='схваченный',
-#     new_text='- Скорость схваченного существа равна 0, и оно не получает '
-#              'выгоды ни от каких бонусов к скорости.  \n'
-#              '- Состояние оканчивается, если схвативший становится '
-#              '**недееспособен**.  \n'
-#              '- Это состояние также оканчивается, если какой-либо эффект '
-#              'выводит схваченное существо из зоны досягаемости '
-#              'того, кто его удерживает, или из зоны удерживающего эффекта. '
-#              'Например, '
-#              'когда существо отбрасывается заклинанием волна грома.',
-# )
-update_article_attribute(article_name='схваченный', intent='condition',
-                         attribute_name='title', language='ru',
-                         new_text='Схваченный')
+update_article_attribute(
+        article_name='схваченный',
+        new_text='- A grappled creature’s speed becomes 0, and it can’t '
+                 'benefit '
+                 'from any bonus to its speed.  \n'
+                 '- The condition ends if the Grappler is incapacitated.  \n'
+                 '- The condition also ends if an effect removes the '
+                 'grappled creature from the reach of the Grappler '
+                 'or Grappling effect, such as when a creature is '
+                 'hurled away by the Thunderwave spell.',
+        language='en',
+        attribute_name='description'
+)
+# update_article_attribute(article_name='схваченный', intent='condition',
+#                          attribute_name='title', language='ru',
+#                          new_text='Схваченный')
 print(get_article(article_name='схваченный'))

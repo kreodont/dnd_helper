@@ -140,10 +140,27 @@ def fetch_article_text(
     else:
         another_lang = 'en'
 
+    if 'description' in items_dict[request.intent_name] and request_lang in \
+            items_dict[request.intent_name]['description']:
+        description = items_dict[request.intent_name]['description'][
+            request_lang]
+    else:
+        description = 'No description'
+
+    if 'title' in items_dict[request.intent_name] and request_lang in \
+            items_dict[request.intent_name]['title']:
+        header = items_dict[request.intent_name]['title'][request_lang].title()
+    else:
+        header = 'No header'
+
+    predictions = []
+    if 'title' in items_dict[request.intent_name] and another_lang in \
+            items_dict[request.intent_name]['title']:
+        predictions.append(
+                items_dict[request.intent_name]['title'][another_lang])
+
     return Response(
-            text=items_dict[request.intent_name]['description'][request_lang],
-            header=items_dict[request.intent_name]['title'][request_lang].title(),
-            predictions=[
-                items_dict[request.intent_name]['title'][another_lang],
-            ]
+            text=description,
+            header=header,
+            predictions=predictions
     )

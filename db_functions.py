@@ -22,12 +22,14 @@ def add_article(
     if 'Item' not in stored_dict:
         stored_dict = {intent_name: {'description': {}}}
     else:
+        print(f'Article with name "{article_name}" already exists. Use update_attribute function to change it')
         stored_dict = json.loads(stored_dict['Item']['value']['S'])
 
     stored_dict[intent_name]['description']['ru'] = article_text_ru
     stored_dict[intent_name]['description']['en'] = article_text_en
     stored_dict[intent_name]['header']['en'] = en_header
     stored_dict[intent_name]['header']['ru'] = ru_header
+    stored_dict['write_protection'] = False
 
     client.put_item(TableName=database_name,
                     Item={
@@ -54,13 +56,38 @@ def get_article(*, article_name: str) -> dict:
     return stored_dict
 
 
+def reset_write_protection(*, article_name: str):
+    client = boto3.Session(profile_name='kreodont').client('dynamodb')
+    stored_dict = client.get_item(
+        TableName=database_name,
+        Key={
+            'name': {'S': article_name.lower()},
+        })
+    if 'Item' not in stored_dict:
+        stored_dict = {}
+    else:
+        stored_dict = json.loads(stored_dict['Item']['value']['S'])
+
+    stored_dict['write_protection'] = False
+    client.put_item(TableName=database_name,
+                    Item={
+                        'name':  {
+                            'S': article_name.lower(),
+                        },
+                        'value': {
+                            'S': json.dumps(stored_dict),
+                        }})
+
+
 def update_article_attribute(
         *,
         article_name: str,
         new_text: str,
         attribute_name: str,
         language: str,
-        intent: str = None):
+        intent: str = None,
+        set_write_protection: bool = True,
+):
     client = boto3.Session(profile_name='kreodont').client('dynamodb')
     stored_dict = client.get_item(
             TableName=database_name,
@@ -71,6 +98,14 @@ def update_article_attribute(
         stored_dict = {}
     else:
         stored_dict = json.loads(stored_dict['Item']['value']['S'])
+
+    record_protected = stored_dict.get('write_protection')
+    if record_protected:
+        print(f'Database entry "{article_name}" write-protection attribute set to True. Not allowed to change the article. Set this attribute to false to change the record')
+        return
+
+    stored_dict.pop('write_protection')
+
     if intent is None:
         if len(stored_dict) != 1:
             raise Exception(f'Intent not specified, but there '
@@ -83,6 +118,9 @@ def update_article_attribute(
     if attribute_name not in new_dict[intent]:
         new_dict[intent][attribute_name] = {}
     new_dict[intent][attribute_name][language] = new_text
+    if set_write_protection:
+        new_dict['write_protection'] = True
+
     client.put_item(TableName=database_name,
                     Item={
                         'name': {
@@ -119,6 +157,7 @@ def update_article_attribute(
 #
 # )
 # print(get_article(article_name='схваченный'))
+reset_write_protection(article_name='схваченный')
 update_article_attribute(
         article_name='схваченный',
         new_text='- A grappled creature’s speed becomes 0, and it can’t '

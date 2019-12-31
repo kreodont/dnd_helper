@@ -22,8 +22,10 @@ def add_article(
     if 'Item' not in stored_dict:
         stored_dict = {intent_name: {'description': {}}}
     else:
-        print(f'Article with name "{article_name}" already exists. Use update_attribute function to change it')
-        stored_dict = json.loads(stored_dict['Item']['value']['S'])
+        print(f'Article with name "{article_name}" already exists. '
+              f'Use update_attribute function to change it')
+        return
+        # stored_dict = json.loads(stored_dict['Item']['value']['S'])
 
     stored_dict[intent_name]['description']['ru'] = article_text_ru
     stored_dict[intent_name]['description']['en'] = article_text_en
@@ -101,7 +103,9 @@ def update_article_attribute(
 
     record_protected = stored_dict.get('write_protection')
     if record_protected:
-        print(f'Database entry "{article_name}" write-protection attribute set to True. Not allowed to change the article. Set this attribute to false to change the record')
+        print(f'Database entry "{article_name}" write-protection attribute '
+              f'set to True. Not allowed to change the article. Set this '
+              f'attribute to false to change the record')
         return
 
     stored_dict.pop('write_protection')
@@ -175,3 +179,5 @@ update_article_attribute(
 #                          attribute_name='title', language='ru',
 #                          new_text='Схваченный')
 print(get_article(article_name='схваченный'))
+
+

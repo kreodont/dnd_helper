@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 
-
+"""
+Incapsulates response to send to Google Assistant.
+Implements couple helper functions
+"""
 @dataclass(frozen=True)
 class Response:
     text: str

@@ -2,6 +2,10 @@ from Request import dict_to_request_object
 from Response import response_to_dict
 from database_handler import fetch_article_text
 
+"""
+Main lambda function (Entry point is dnd_helper)
+"""
+
 
 def dnd_helper(event: dict, context: dict) -> dict:
     print(event)

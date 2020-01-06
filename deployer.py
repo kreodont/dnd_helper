@@ -3,6 +3,9 @@ import zipfile
 import os
 import boto3
 import glob
+"""
+Deploys backend function onto AWS Lambda
+"""
 
 profiles_dictionary = {
     'kreodont':

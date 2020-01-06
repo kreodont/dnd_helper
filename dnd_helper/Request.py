@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from uuid import uuid4
 import unicodedata
 
+"""
+Incapsulates request from Google Assistant.
+Implements couple helper functions
+"""
 
 @dataclass(frozen=True)
 class Request:
@@ -15,7 +19,8 @@ class Request:
     intent_id: str
 
     def __repr__(self):
-        return f'{self.text} (lang: {self.language})\nParameters: {self.parameters}'
+        return f'{self.text} (lang: {self.language})\n' \
+               f'Parameters: {self.parameters}'
 
 
 def only_roman_chars(unistr):
@@ -25,9 +30,12 @@ def only_roman_chars(unistr):
         try:
             return latin_letters[uchr]
         except KeyError:
-            return latin_letters.setdefault(uchr, 'LATIN' in unicodedata.name(uchr))
+            return latin_letters.setdefault(
+                uchr,
+                'LATIN' in unicodedata.name(uchr),
+            )
 
-    return all(is_latin(uchr) for uchr in unistr if uchr.isalpha())  # isalpha suggested by John Machin
+    return all(is_latin(uchr) for uchr in unistr if uchr.isalpha())
 
 
 def dict_to_request_object(incoming_dict: dict, lambda_mode: bool = True) -> \
@@ -53,5 +61,13 @@ def dict_to_request_object(incoming_dict: dict, lambda_mode: bool = True) -> \
 
     session = incoming_dict.get('session', 'failed to load session id')
     uuid = incoming_dict.get('responseId', uuid4())
-    return Request(uuid=uuid, session=session, language=language, text=text,
-                   parameters=parameters, lamda_mode=lambda_mode, intent_name=intent_name, intent_id=intent_id)
+    return Request(
+        uuid=uuid,
+        session=session,
+        language=language,
+        text=text,
+        parameters=parameters,
+        lamda_mode=lambda_mode,
+        intent_name=intent_name,
+        intent_id=intent_id,
+    )

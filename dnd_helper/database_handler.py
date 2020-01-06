@@ -4,6 +4,10 @@ from typing import Optional
 from Request import Request
 from Response import Response
 import json
+"""
+Low level functions to work with DynamoDB
+"""
+
 # This cache is useful because AWS lambda can keep it's state, so no
 # need to restantiate connections again. It is used in get_boto3_client
 # function, I know it is a mess, but 100 ms are 100 ms

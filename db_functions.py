@@ -1,5 +1,8 @@
 import boto3
 import json
+"""
+High level Create-Update-Delete functions to work with DynamoDB
+"""
 
 database_name = 'dnd_article2'
 
